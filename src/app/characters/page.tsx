@@ -33,7 +33,7 @@ export default function CharactersPage() {
     },
   });
 
-  const openDeleteModal = (id: string) => {
+  const openDeleteModal = () => {
     setIsModalOpen(true);
     //TODO: I can't get delete api
   };
@@ -59,7 +59,7 @@ export default function CharactersPage() {
   }, [charactersState.isSuccess]);
 
   return (
-    <div className="flex flex-row flex-wrap gap-x-6 gap-y-7">
+    <div className="flex items-center justify-center min-h-screen">
       {charactersState.isLoading && <p>Loading...</p>}
       {morties.length > 0 && (
         <div className="flex flex-row flex-wrap gap-x-6 gap-y-7">
@@ -67,7 +67,8 @@ export default function CharactersPage() {
             <CharacterCard
               key={index}
               character={character}
-              onDeleteModalShow={() => openDeleteModal(character.id)}
+              //   onDeleteModalShow={() => openDeleteModal(character.id)}
+              onDeleteModalShow={openDeleteModal}
             />
           ))}
         </div>
