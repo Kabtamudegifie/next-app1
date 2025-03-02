@@ -7,12 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Textfield from "@/components/forms/input/Textfield";
 import SelectField from "@/components/forms/select/SelectField";
-
-enum Status {
-  DEAD = "Dead",
-  ALIVE = "Alive",
-  UNKNOWN = "Unknown",
-}
+import { Status } from "@/models/character.model";
 
 const formValuesSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -50,7 +45,7 @@ export default function CreateCharacterPage() {
 
   return (
     <div className="flex flex-col gap-6 h-screen w-full items-center justify-center">
-      <h1>Add new character</h1>
+      <h1 className="font-bold text-xl">Add new character</h1>
       <form
         className="flex flex-col gap-6 w-1/2"
         onSubmit={handleSubmit(onSubmit)}
@@ -85,7 +80,7 @@ export default function CreateCharacterPage() {
 
         <button
           type="submit"
-          className="bg-green-400 px-6 py-2 rounded-lg text-lg font-semibold"
+          className="bg-green-400 px-6 py-2 rounded-lg text-lg font-semibold hover:bg-green-500"
         >
           Add
         </button>
