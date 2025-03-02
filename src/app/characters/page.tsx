@@ -6,11 +6,12 @@ import { Character } from "@/models/character.model";
 import CharacterCard from "@/components/character/card/CharacterCard";
 import { Modal } from "@/components/modals/Modal";
 import { MORTY_STORAGE_KEY } from "@/constants";
+import { useRouter } from "next/navigation";
 
 export default function CharactersPage() {
   const [morties, setMorties] = useState<Character[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const router = useRouter();
   const fetchCharacters = async ({ pageParam = 1 }) => {
     const res = await fetch(
       `https://rickandmortyapi.com/api/character?page=${pageParam}`
@@ -60,7 +61,15 @@ export default function CharactersPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6 items-center justify-center min-h-screen">
-      <h1 className="font-bold text-lg text-white">Characters</h1>
+      <div className="flex flex-row gap-6 items-center justify-between">
+        <h1 className="font-bold text-lg text-white">Characters</h1>
+        <button
+          onClick={() => router.push("/characters/create-characters")}
+          className="text-white rounded-md p-3 bg-green-400"
+        >
+          Add new
+        </button>
+      </div>
       {charactersState.isLoading && <p>Loading...</p>}
       {morties.length > 0 && (
         <div className="flex flex-row justify-center flex-wrap gap-x-6 gap-y-7">
