@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import React, { useEffect, useState } from "react";
@@ -11,13 +10,16 @@ import { useRouter } from "next/navigation";
 export default function CharactersPage() {
   const [morties, setMorties] = useState<Character[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [globalError, setGlobalError] = useState("");
+
   const router = useRouter();
   const fetchCharacters = async ({ pageParam = 1 }) => {
     const res = await fetch(
       `https://rickandmortyapi.com/api/character?page=${pageParam}`
     );
     if (!res.ok) throw new Error("Failed to fetch data");
-    return res.json();
+    const results = await res.json();
+    return results;
   };
 
   const { data: characters, ...charactersState } = useInfiniteQuery({
@@ -34,21 +36,50 @@ export default function CharactersPage() {
     },
   });
 
-  const openDeleteModal = () => {
+  const openDeleteModal = (character: Character) => {
     setIsModalOpen(true);
-    //TODO: I can't get delete api
+    const data = localStorage.getItem(MORTY_STORAGE_KEY);
+
+    if (character.fromLocal && data) {
+      try {
+        const localMorties: Character[] = JSON.parse(data);
+        const localIndex = localMorties.findIndex(
+          (localMorty) => localMorty.id === character.id
+        );
+        const apiMorties: Character[] = characters?.pages
+          .map((v) => v.results)
+          .reduce((acc, curr) => acc.concat(curr), []);
+
+        if (localIndex !== -1) {
+          localMorties.splice(localIndex, 1);
+          const allData: Character[] = [
+            structuredClone(JSON.parse(data)),
+            structuredClone(apiMorties),
+          ];
+          setMorties(allData);
+        }
+      } catch (error) {
+        if (error instanceof SyntaxError) {
+          setGlobalError("Unable to parse local data.");
+        } else {
+          setGlobalError("Something went wrong while parsing data.");
+        }
+      }
+    }
   };
+
   const onDeleteHandler = () => {};
+  console.log(characters);
 
   useEffect(() => {
     if (charactersState.isSuccess) {
-      const charactersData = characters?.pages
+      const charactersData: Character[] = characters?.pages
         .map((v) => v.results)
         .reduce((acc, curr) => acc.concat(curr), []);
 
       const data = localStorage.getItem(MORTY_STORAGE_KEY);
       if (data) {
-        const allData = [
+        const allData: Character[] = [
           structuredClone(JSON.parse(data)),
           structuredClone(charactersData),
         ];
@@ -57,7 +88,7 @@ export default function CharactersPage() {
         setMorties(structuredClone(charactersData));
       }
     }
-  }, [charactersState.isSuccess]);
+  }, [characters?.pages, charactersState.isSuccess]);
 
   return (
     <div className="flex flex-col gap-6 p-6 items-center justify-center min-h-screen">
@@ -77,8 +108,7 @@ export default function CharactersPage() {
             <CharacterCard
               key={index}
               character={character}
-              //   onDeleteModalShow={() => openDeleteModal(character.id)}
-              onDeleteModalShow={openDeleteModal}
+              onDeleteModalShow={() => openDeleteModal(character)}
             />
           ))}
         </div>

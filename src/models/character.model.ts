@@ -17,6 +17,7 @@ export interface Character {
   };
   episode: string;
   created: string;
+  fromLocal: boolean;
 }
 
 export enum Status {

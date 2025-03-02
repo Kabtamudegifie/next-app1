@@ -42,6 +42,7 @@ export default function CreateCharacterPage() {
       species: data.species,
       image: data.imageUrl,
       name: data.name,
+      fromLocal: true,
     });
 
     localStorage.setItem(MORTY_STORAGE_KEY, newMorty);
