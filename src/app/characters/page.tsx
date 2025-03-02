@@ -1,5 +1,4 @@
 "use client";
-import { useInfiniteQuery } from "@tanstack/react-query";
 import React, { useEffect, useState } from "react";
 import { Character } from "@/models/character.model";
 import CharacterCard from "@/components/character/card/CharacterCard";
@@ -7,6 +6,8 @@ import { Modal } from "@/components/modals/Modal";
 import { MORTY_STORAGE_KEY } from "@/constants";
 import { useRouter } from "next/navigation";
 import Button from "@/components/forms/button/Button";
+import useGetInfiniteCharacters from "@/hooks/useGetInfiniteCharacters";
+import { mergeLocalData } from "@/utils/object.util";
 
 export default function CharactersPage() {
   const [morties, setMorties] = useState<Character[]>([]);
@@ -15,28 +16,10 @@ export default function CharactersPage() {
   const [selectedCharacter, setSelectedCharacter] = useState<Character>();
 
   const router = useRouter();
-  const fetchCharacters = async ({ pageParam = 1 }) => {
-    const res = await fetch(
-      `https://rickandmortyapi.com/api/character?page=${pageParam}`
-    );
-    if (!res.ok) throw new Error("Failed to fetch data");
-    const results = await res.json();
-    return results;
-  };
 
-  const { data: characters, ...charactersState } = useInfiniteQuery({
-    queryKey: ["characters"],
-    queryFn: fetchCharacters,
-    initialPageParam: 1,
-    getNextPageParam: (lastPage, pages) => {
-      const maxPages = Math.ceil(lastPage.total / 3);
-      const nextPage = pages.length + 1;
-      return nextPage <= maxPages ? nextPage : undefined;
-    },
-    getPreviousPageParam: (_firstPage, pages) => {
-      return pages.length > 1 ? pages.length - 1 : undefined;
-    },
-  });
+  const { data: characters, ...charactersState } = useGetInfiniteCharacters(
+    "https://rickandmortyapi.com/api/character"
+  );
 
   const openDeleteModal = (character: Character) => {
     setIsModalOpen((prev) => {
@@ -83,21 +66,9 @@ export default function CharactersPage() {
         .map((v) => v.results)
         .reduce((acc, curr) => acc.concat(curr), []);
 
-      const localCharacters = localStorage.getItem(MORTY_STORAGE_KEY);
-
-      if (localCharacters) {
-        const parsedLocalCharacter =
-          (JSON.parse(localCharacters) as Character[]) ?? [];
-
-        if (parsedLocalCharacter.length > 0) {
-          const allCharacters: Character[] = [
-            ...structuredClone(JSON.parse(localCharacters)),
-            ...structuredClone(apiCharacters),
-          ];
-          setMorties(allCharacters);
-        }
-      } else {
-        setMorties(structuredClone(apiCharacters));
+      const mergedCharacters = mergeLocalData(apiCharacters);
+      if (mergedCharacters.length > 0) {
+        setMorties(mergedCharacters);
       }
     }
   }, [characters?.pages, charactersState.isSuccess]);

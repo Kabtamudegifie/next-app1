@@ -10,9 +10,9 @@ export default function CharacterStatusBadge({ status }: Props) {
       className={clsx(
         "flex flex-row items-center uppercase px-6 py-1 rounded-md text-white",
         {
-          "bg-green-500": status === "Alive",
-          "bg-red-500 ": status === "Dead",
-          "bg-gray-500": !!status,
+          "bg-green-600": status === "Alive",
+          "bg-red-600 ": status === "Dead",
+          "bg-gray-600": !!status,
         }
       )}
     >
