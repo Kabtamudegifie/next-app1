@@ -34,21 +34,26 @@ export default function CharactersPage() {
     if (selectedCharacter.fromLocal && data) {
       try {
         const localMorties: Character[] = JSON.parse(data);
-        const localIndex = localMorties.findIndex(
-          (localMorty) => localMorty.id === selectedCharacter.id
+        const filterLocalMorties = localMorties.filter(
+          (localMorty) => localMorty.id !== selectedCharacter.id
         );
+        if (filterLocalMorties.length > 0) {
+          localStorage.setItem(
+            MORTY_STORAGE_KEY,
+            JSON.stringify(filterLocalMorties)
+          );
+        }
+
         const apiMorties: Character[] = characters?.pages
           .map((v) => v.results)
           .reduce((acc, curr) => acc.concat(curr), []);
 
-        if (localIndex !== -1) {
-          localMorties.splice(localIndex, 1);
-          const allData: Character[] = [
-            ...structuredClone(localMorties),
-            ...structuredClone(apiMorties),
-          ];
-          setMorties(allData);
-        }
+        const allData: Character[] = [
+          ...structuredClone(filterLocalMorties),
+          ...structuredClone(apiMorties),
+        ];
+        setMorties(allData);
+
         setIsModalOpen(false);
       } catch (error) {
         if (error instanceof SyntaxError) {
