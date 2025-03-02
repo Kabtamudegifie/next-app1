@@ -30,12 +30,17 @@ export default function CreateCharacterPage() {
     resolver: zodResolver(formValuesSchema),
     mode: "all",
   });
+  const getRandomString = (length = 8) =>
+    Math.random()
+      .toString(36)
+      .substring(2, 2 + length);
 
   const onSubmit = (data: FormValues) => {
     const newMorty = JSON.stringify({
+      id: getRandomString(),
       status: data.status,
       species: data.species,
-      imageUrl: data.imageUrl,
+      image: data.imageUrl,
       name: data.name,
     });
 
