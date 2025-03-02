@@ -22,9 +22,9 @@ export default function CharactersPage() {
   );
 
   const openDeleteModal = (character: Character) => {
-    setIsModalOpen((prev) => {
-      setSelectedCharacter(character);
-      return !prev;
+    setSelectedCharacter(() => {
+      setIsModalOpen(true);
+      return character;
     });
   };
 
@@ -33,9 +33,10 @@ export default function CharactersPage() {
     const data = localStorage.getItem(MORTY_STORAGE_KEY);
     if (selectedCharacter.fromLocal && data) {
       try {
-        const apiMorties: Character[] = characters?.pages
-          .map((v) => v.results)
-          .reduce((acc, curr) => acc.concat(curr), []);
+        const apiMorties: Character[] =
+          characters?.pages
+            .map((v) => v.results)
+            .reduce((acc, curr) => acc.concat(curr), []) ?? [];
 
         const allData = deleteLocalItemAndMerge<Character>(
           apiMorties,
@@ -58,9 +59,10 @@ export default function CharactersPage() {
 
   useEffect(() => {
     if (charactersState.isSuccess) {
-      const apiCharacters: Character[] = characters?.pages
-        .map((v) => v.results)
-        .reduce((acc, curr) => acc.concat(curr), []);
+      const apiCharacters: Character[] =
+        characters?.pages
+          .map((v) => v.results)
+          .reduce((acc, curr) => acc.concat(curr), []) ?? [];
 
       const mergedCharacters = mergeLocalData(apiCharacters);
       if (mergedCharacters.length > 0) {
