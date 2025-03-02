@@ -1,3 +1,5 @@
+import Button from "../forms/button/Button";
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -13,12 +15,9 @@ export const Modal = ({ isOpen, onClose, onDelete, children }: Props) => {
         {children}
         <div className="flex flex-row items-center gap-4 justify-end mt-3">
           <button onClick={onClose}>Cancel</button>
-          <button
-            onClick={onDelete}
-            className="items-center flex px-2 py-1 rounded-md bg-red-400"
-          >
+          <Button variant="danger" onClick={onDelete}>
             Delete
-          </button>
+          </Button>
         </div>
       </div>
     </div>

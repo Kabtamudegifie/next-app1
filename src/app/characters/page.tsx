@@ -6,6 +6,7 @@ import CharacterCard from "@/components/character/card/CharacterCard";
 import { Modal } from "@/components/modals/Modal";
 import { MORTY_STORAGE_KEY } from "@/constants";
 import { useRouter } from "next/navigation";
+import Button from "@/components/forms/button/Button";
 
 export default function CharactersPage() {
   const [morties, setMorties] = useState<Character[]>([]);
@@ -105,12 +106,10 @@ export default function CharactersPage() {
     <div className="flex flex-col gap-6 p-6 items-center justify-center min-h-screen">
       <div className="flex flex-row gap-6 items-center justify-between">
         <h1 className="font-bold text-lg text-white">Characters</h1>
-        <button
-          onClick={() => router.push("/characters/create-characters")}
-          className="text-white rounded-md p-3 bg-green-400"
-        >
+
+        <Button onClick={() => router.push("/characters/create-characters")}>
           Add new
-        </button>
+        </Button>
       </div>
       {globalError && <p className="text-red-400">{globalError}</p>}
       {charactersState.isLoading && <p>Loading...</p>}

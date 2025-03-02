@@ -8,6 +8,7 @@ import { z } from "zod";
 import Textfield from "@/components/forms/input/Textfield";
 import SelectField from "@/components/forms/select/SelectField";
 import { Character, Status } from "@/models/character.model";
+import Button from "@/components/forms/button/Button";
 
 const formValuesSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -96,12 +97,7 @@ export default function CreateCharacterPage() {
           error={errors.imageUrl?.message}
         />
 
-        <button
-          type="submit"
-          className="bg-green-400 px-6 py-2 rounded-lg text-lg font-semibold hover:bg-green-500"
-        >
-          Add
-        </button>
+        <Button type="submit">Add</Button>
       </form>
     </div>
   );
