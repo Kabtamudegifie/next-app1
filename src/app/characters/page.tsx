@@ -59,10 +59,11 @@ export default function CharactersPage() {
   }, [charactersState.isSuccess]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex flex-col gap-6 p-6 items-center justify-center min-h-screen">
+      <h1 className="font-bold text-lg text-white">Characters</h1>
       {charactersState.isLoading && <p>Loading...</p>}
       {morties.length > 0 && (
-        <div className="flex flex-row flex-wrap gap-x-6 gap-y-7">
+        <div className="flex flex-row justify-center flex-wrap gap-x-6 gap-y-7">
           {morties.map((character, index) => (
             <CharacterCard
               key={index}
