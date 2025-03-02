@@ -11,6 +11,7 @@ export default function CharactersPage() {
   const [morties, setMorties] = useState<Character[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [globalError, setGlobalError] = useState("");
+  const [selectedCharacter, setSelectedCharacter] = useState<Character>();
 
   const router = useRouter();
   const fetchCharacters = async ({ pageParam = 1 }) => {
@@ -37,14 +38,20 @@ export default function CharactersPage() {
   });
 
   const openDeleteModal = (character: Character) => {
-    setIsModalOpen(true);
-    const data = localStorage.getItem(MORTY_STORAGE_KEY);
+    setIsModalOpen((prev) => {
+      setSelectedCharacter(character);
+      return !prev;
+    });
+  };
 
-    if (character.fromLocal && data) {
+  const onDeleteHandler = () => {
+    if (!selectedCharacter) return;
+    const data = localStorage.getItem(MORTY_STORAGE_KEY);
+    if (selectedCharacter.fromLocal && data) {
       try {
         const localMorties: Character[] = JSON.parse(data);
         const localIndex = localMorties.findIndex(
-          (localMorty) => localMorty.id === character.id
+          (localMorty) => localMorty.id === selectedCharacter.id
         );
         const apiMorties: Character[] = characters?.pages
           .map((v) => v.results)
@@ -53,11 +60,12 @@ export default function CharactersPage() {
         if (localIndex !== -1) {
           localMorties.splice(localIndex, 1);
           const allData: Character[] = [
-            structuredClone(JSON.parse(data)),
-            structuredClone(apiMorties),
+            ...structuredClone(localMorties),
+            ...structuredClone(apiMorties),
           ];
           setMorties(allData);
         }
+        setIsModalOpen(false);
       } catch (error) {
         if (error instanceof SyntaxError) {
           setGlobalError("Unable to parse local data.");
@@ -68,24 +76,27 @@ export default function CharactersPage() {
     }
   };
 
-  const onDeleteHandler = () => {};
-  console.log(characters);
-
   useEffect(() => {
     if (charactersState.isSuccess) {
-      const charactersData: Character[] = characters?.pages
+      const apiCharacters: Character[] = characters?.pages
         .map((v) => v.results)
         .reduce((acc, curr) => acc.concat(curr), []);
 
-      const data = localStorage.getItem(MORTY_STORAGE_KEY);
-      if (data) {
-        const allData: Character[] = [
-          structuredClone(JSON.parse(data)),
-          structuredClone(charactersData),
-        ];
-        setMorties(allData);
+      const localCharacters = localStorage.getItem(MORTY_STORAGE_KEY);
+
+      if (localCharacters) {
+        const parsedLocalCharacter =
+          (JSON.parse(localCharacters) as Character[]) ?? [];
+
+        if (parsedLocalCharacter.length > 0) {
+          const allCharacters: Character[] = [
+            ...structuredClone(JSON.parse(localCharacters)),
+            ...structuredClone(apiCharacters),
+          ];
+          setMorties(allCharacters);
+        }
       } else {
-        setMorties(structuredClone(charactersData));
+        setMorties(structuredClone(apiCharacters));
       }
     }
   }, [characters?.pages, charactersState.isSuccess]);
@@ -101,6 +112,7 @@ export default function CharactersPage() {
           Add new
         </button>
       </div>
+      {globalError && <p className="text-red-400">{globalError}</p>}
       {charactersState.isLoading && <p>Loading...</p>}
       {morties.length > 0 && (
         <div className="flex flex-row justify-center flex-wrap gap-x-6 gap-y-7">
@@ -118,6 +130,7 @@ export default function CharactersPage() {
         disabled={
           !charactersState.hasNextPage || charactersState.isFetchingNextPage
         }
+        className="disabled:text-gray-500"
       >
         Load more..
       </button>

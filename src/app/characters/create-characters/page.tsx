@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Textfield from "@/components/forms/input/Textfield";
 import SelectField from "@/components/forms/select/SelectField";
-import { Status } from "@/models/character.model";
+import { Character, Status } from "@/models/character.model";
 
 const formValuesSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -36,14 +36,26 @@ export default function CreateCharacterPage() {
       .substring(2, 2 + length);
 
   const onSubmit = (data: FormValues) => {
-    const newMorty = JSON.stringify({
+    const prevLocalCharacters = localStorage.getItem(MORTY_STORAGE_KEY);
+    const newCharacter: Character = {
       id: getRandomString(),
       status: data.status,
       species: data.species,
       image: data.imageUrl,
       name: data.name,
       fromLocal: true,
-    });
+    } as Character;
+    const parsedPrevLocalCharacters: Character[] = [];
+    if (prevLocalCharacters) {
+      parsedPrevLocalCharacters.push(
+        ...structuredClone(JSON.parse(prevLocalCharacters) ?? [])
+      );
+      parsedPrevLocalCharacters.push(newCharacter);
+    } else {
+      parsedPrevLocalCharacters.push(newCharacter);
+    }
+
+    const newMorty = JSON.stringify(parsedPrevLocalCharacters);
 
     localStorage.setItem(MORTY_STORAGE_KEY, newMorty);
     router.push("/characters");

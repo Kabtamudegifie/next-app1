@@ -26,15 +26,16 @@ export default function CharacterCard({ character, onDeleteModalShow }: Props) {
         />
         <CharacterItem label="Name" value={character.name} />
         <CharacterItem label="Species" value={character.species} />
-
-        <div className="opacity-0 transition-opacity duration-300 group-hover:opacity-100 self-end">
-          <button
-            onClick={onDeleteModalShow}
-            className="px-3 py-1 bg-red-400 text-white rounded-lg shadow-md hover:bg-red-500 transition-all"
-          >
-            Delete
-          </button>
-        </div>
+        {character.fromLocal && (
+          <div className="opacity-0 transition-opacity duration-300 group-hover:opacity-100 self-end">
+            <button
+              onClick={onDeleteModalShow}
+              className="px-3 py-1 bg-red-400 text-white rounded-lg shadow-md hover:bg-red-500 transition-all"
+            >
+              Delete
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
