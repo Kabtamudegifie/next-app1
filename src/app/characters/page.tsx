@@ -1,50 +1,95 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import React, { useEffect, useState } from "react";
 import { Character } from "@/models/character.model";
 import CharacterCard from "@/components/character/card/CharacterCard";
+import { Modal } from "@/components/modals/Modal";
+import { MORTY_STORAGE_KEY } from "@/constants";
 
 export default function CharactersPage() {
   const [morties, setMorties] = useState<Character[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { data: characters, ...charactersState } = useQuery({
+  const fetchCharacters = async ({ pageParam = 1 }) => {
+    const res = await fetch(
+      `https://rickandmortyapi.com/api/character?page=${pageParam}`
+    );
+    if (!res.ok) throw new Error("Failed to fetch data");
+    return res.json();
+  };
+
+  const { data: characters, ...charactersState } = useInfiniteQuery({
     queryKey: ["characters"],
-    queryFn: async () => {
-      const querySnapshot = await fetch(
-        "https://rickandmortyapi.com/api/character"
-      );
-      if (querySnapshot.ok) {
-        return ((await querySnapshot.json()) as any).results;
-      }
-      return [];
+    queryFn: fetchCharacters,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, pages) => {
+      const maxPages = Math.ceil(lastPage.total / 3);
+      const nextPage = pages.length + 1;
+      return nextPage <= maxPages ? nextPage : undefined;
+    },
+    getPreviousPageParam: (_firstPage, pages) => {
+      return pages.length > 1 ? pages.length - 1 : undefined;
     },
   });
 
+  const openDeleteModal = (id: string) => {
+    setIsModalOpen(true);
+    //TODO: I can't get delete api
+  };
+  const onDeleteHandler = () => {};
+
   useEffect(() => {
     if (charactersState.isSuccess) {
-      //   const data = localStorage.getItem(MORTY_STORAGE_KEY);
-      //     if (data) {
-      //       const allData = [
-      //         structuredClone(JSON.parse(data)),
-      //         structuredClone(characters),
-      //       ];
-      //       setMorties(allData);
-      //     } else {
-      setMorties(structuredClone(characters));
-      // }
+      const charactersData = characters?.pages
+        .map((v) => v.results)
+        .reduce((acc, curr) => acc.concat(curr), []);
+
+      const data = localStorage.getItem(MORTY_STORAGE_KEY);
+      if (data) {
+        const allData = [
+          structuredClone(JSON.parse(data)),
+          structuredClone(charactersData),
+        ];
+        setMorties(allData);
+      } else {
+        setMorties(structuredClone(charactersData));
+      }
     }
   }, [charactersState.isSuccess]);
 
   return (
     <div className="flex flex-row flex-wrap gap-x-6 gap-y-7">
       {charactersState.isLoading && <p>Loading...</p>}
-      {characters && characters.length > 0 && (
+      {morties.length > 0 && (
         <div className="flex flex-row flex-wrap gap-x-6 gap-y-7">
           {morties.map((character, index) => (
-            <CharacterCard key={index} character={character} />
+            <CharacterCard
+              key={index}
+              character={character}
+              onDeleteModalShow={() => openDeleteModal(character.id)}
+            />
           ))}
         </div>
       )}
+      <button
+        onClick={() => charactersState.fetchNextPage()}
+        disabled={
+          !charactersState.hasNextPage || charactersState.isFetchingNextPage
+        }
+      >
+        Load more..
+      </button>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onDelete={onDeleteHandler}
+      >
+        <h2 className="text-xl font-bold">Delete character</h2>
+        <p className="mt-2">
+          Are you sure you want to delete the character? This cannot be undone.
+        </p>
+      </Modal>
     </div>
   );
 }
