@@ -1,20 +1,19 @@
 import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
 import { fetchData } from "@/utils/fetch.function";
-import { Character } from "@/models/character.model";
-export interface RickAndMortyResponse {
+export interface Response<Entity> {
   info: {
     count: number;
     pages: number;
     next: string | null;
     prev: string | null;
   };
-  results: Character[];
+  results: Entity[];
 }
-export default function useGetInfiniteCharacters(url: string) {
+export default function useGetInfiniteCharacters<Entity>(url: string) {
   return useInfiniteQuery<
-    RickAndMortyResponse,
+    Response<Entity>,
     Error,
-    InfiniteData<RickAndMortyResponse, number>,
+    InfiniteData<Response<Entity>, number>,
     string[],
     number
   >({

@@ -1,9 +1,8 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Character } from "@/models/character.model";
 import CharacterCard from "@/components/character/card/CharacterCard";
 import { Modal } from "@/components/modals/Modal";
-import { MORTY_STORAGE_KEY } from "@/constants";
 import { useRouter } from "next/navigation";
 import Button from "@/components/forms/button/Button";
 import useGetInfiniteCharacters from "@/hooks/useGetInfiniteCharacters";
@@ -17,9 +16,18 @@ export default function CharactersPage() {
 
   const router = useRouter();
 
-  const { data: characters, ...charactersState } = useGetInfiniteCharacters(
-    "https://rickandmortyapi.com/api/character"
-  );
+  const { data: characters, ...charactersState } =
+    useGetInfiniteCharacters<Character>(
+      "https://rickandmortyapi.com/api/character"
+    );
+
+  const pagesReducer = useCallback(() => {
+    const apiMorties: Character[] =
+      characters?.pages
+        .map((v) => v.results)
+        .reduce((acc, curr) => acc.concat(curr), []) ?? [];
+    return apiMorties;
+  }, [characters?.pages]);
 
   const openDeleteModal = (character: Character) => {
     setSelectedCharacter(() => {
@@ -30,16 +38,10 @@ export default function CharactersPage() {
 
   const onDeleteHandler = () => {
     if (!selectedCharacter) return;
-    const data = localStorage.getItem(MORTY_STORAGE_KEY);
-    if (selectedCharacter.fromLocal && data) {
+    if (selectedCharacter.fromLocal) {
       try {
-        const apiMorties: Character[] =
-          characters?.pages
-            .map((v) => v.results)
-            .reduce((acc, curr) => acc.concat(curr), []) ?? [];
-
         const allData = deleteLocalItemAndMerge<Character>(
-          apiMorties,
+          pagesReducer(),
           selectedCharacter
         );
         if (allData) {
@@ -59,17 +61,12 @@ export default function CharactersPage() {
 
   useEffect(() => {
     if (charactersState.isSuccess) {
-      const apiCharacters: Character[] =
-        characters?.pages
-          .map((v) => v.results)
-          .reduce((acc, curr) => acc.concat(curr), []) ?? [];
-
-      const mergedCharacters = mergeLocalData(apiCharacters);
+      const mergedCharacters = mergeLocalData(pagesReducer());
       if (mergedCharacters.length > 0) {
         setMorties(mergedCharacters);
       }
     }
-  }, [characters?.pages, charactersState.isSuccess]);
+  }, [characters?.pages, charactersState.isSuccess, pagesReducer]);
 
   return (
     <div className="flex flex-col gap-6 p-6 items-center justify-center min-h-screen">
