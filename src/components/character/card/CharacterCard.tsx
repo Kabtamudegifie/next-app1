@@ -3,6 +3,7 @@ import Image from "next/image";
 import React from "react";
 import CharacterItem from "./CharacterItem";
 import CharacterBadge from "../CharacterStatusBadge";
+import Button from "@/components/forms/button/Button";
 
 interface Props {
   character: Character;
@@ -10,7 +11,7 @@ interface Props {
 }
 export default function CharacterCard({ character, onDeleteModalShow }: Props) {
   return (
-    <div className="flex group flex-col gap-5 rounded-md shadow-sm border border-gray-100/20 w-full">
+    <div className="flex group flex-col gap-5 rounded-md shadow-lg border border-gray-100/20 w-full">
       <div className="relative w-full rounded-md h-64">
         <Image
           src={character.image}
@@ -28,12 +29,9 @@ export default function CharacterCard({ character, onDeleteModalShow }: Props) {
         <CharacterItem label="Species" value={character.species} />
         {character.fromLocal && (
           <div className="opacity-0 transition-opacity duration-300 group-hover:opacity-100 self-end">
-            <button
-              onClick={onDeleteModalShow}
-              className="px-3 py-1 bg-red-400 text-white rounded-lg shadow-md hover:bg-red-500 transition-all"
-            >
+            <Button variant="danger" onClick={onDeleteModalShow}>
               Delete
-            </button>
+            </Button>
           </div>
         )}
       </div>
