@@ -1,11 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useQuery } from "@tanstack/react-query";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import clsx from "clsx";
 import Image from "next/image";
+import { MORTY_STORAGE_KEY } from "@/constants";
 
 export default function CharactersPage() {
+  const [morties, setMorties] = useState<any[]>([]);
+
   const { data: characters, ...charactersState } = useQuery({
     queryKey: ["characters"],
     queryFn: async () => {
@@ -19,12 +21,27 @@ export default function CharactersPage() {
     },
   });
 
+  useEffect(() => {
+    if (charactersState.isSuccess) {
+      const data = localStorage.getItem(MORTY_STORAGE_KEY);
+      if (data) {
+        const allData = [
+          structuredClone(JSON.parse(data)),
+          structuredClone(characters),
+        ];
+        setMorties(allData);
+      } else {
+        setMorties(structuredClone(characters));
+      }
+    }
+  }, [charactersState.isSuccess]);
+
   return (
     <div className="flex flex-row flex-wrap gap-x-6 gap-y-7">
       {charactersState.isLoading && <p>Loading...</p>}
       {characters && characters.length > 0 && (
         <div className="flex flex-row flex-wrap gap-x-6 gap-y-7">
-          {characters.map((character, index) => (
+          {morties.map((character, index) => (
             <div
               key={index}
               className="flex flex-col gap-5 rounded-md shadow-sm border border-gray-100/50 p-4"

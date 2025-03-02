@@ -1,4 +1,5 @@
 "use client";
+import { MORTY_STORAGE_KEY } from "@/constants";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
@@ -31,7 +32,7 @@ export default function CreateCharacterPage() {
       name,
     });
 
-    localStorage.setItem("morty", data);
+    localStorage.setItem(MORTY_STORAGE_KEY, data);
     clearForm();
     router.push("/characters");
   };
