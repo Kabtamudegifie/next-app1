@@ -25,3 +25,22 @@ export function mergeLocalData<T>(apiData: T[]) {
 
   return apiData;
 }
+
+export function deleteLocalItemAndMerge<T extends { id: string }>(
+  apiData: T[],
+  item: T
+) {
+  const data = localStorage.getItem(MORTY_STORAGE_KEY);
+  if (data) {
+    const localMorties: T[] = JSON.parse(data);
+    const filterLocalMorties = localMorties.filter(
+      (localMorty) => localMorty.id !== item.id
+    );
+    localStorage.setItem(MORTY_STORAGE_KEY, JSON.stringify(filterLocalMorties));
+    const allData: T[] = [
+      ...structuredClone(filterLocalMorties),
+      ...structuredClone(apiData),
+    ];
+    return allData;
+  }
+}

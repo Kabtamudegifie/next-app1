@@ -7,7 +7,7 @@ import { MORTY_STORAGE_KEY } from "@/constants";
 import { useRouter } from "next/navigation";
 import Button from "@/components/forms/button/Button";
 import useGetInfiniteCharacters from "@/hooks/useGetInfiniteCharacters";
-import { mergeLocalData } from "@/utils/object.util";
+import { deleteLocalItemAndMerge, mergeLocalData } from "@/utils/object.util";
 
 export default function CharactersPage() {
   const [morties, setMorties] = useState<Character[]>([]);
@@ -33,26 +33,17 @@ export default function CharactersPage() {
     const data = localStorage.getItem(MORTY_STORAGE_KEY);
     if (selectedCharacter.fromLocal && data) {
       try {
-        const localMorties: Character[] = JSON.parse(data);
-        const filterLocalMorties = localMorties.filter(
-          (localMorty) => localMorty.id !== selectedCharacter.id
-        );
-        if (filterLocalMorties.length > 0) {
-          localStorage.setItem(
-            MORTY_STORAGE_KEY,
-            JSON.stringify(filterLocalMorties)
-          );
-        }
-
         const apiMorties: Character[] = characters?.pages
           .map((v) => v.results)
           .reduce((acc, curr) => acc.concat(curr), []);
 
-        const allData: Character[] = [
-          ...structuredClone(filterLocalMorties),
-          ...structuredClone(apiMorties),
-        ];
-        setMorties(allData);
+        const allData = deleteLocalItemAndMerge<Character>(
+          apiMorties,
+          selectedCharacter
+        );
+        if (allData) {
+          setMorties(allData);
+        }
 
         setIsModalOpen(false);
       } catch (error) {
