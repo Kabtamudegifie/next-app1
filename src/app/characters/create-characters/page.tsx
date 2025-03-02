@@ -1,67 +1,88 @@
 "use client";
 import { MORTY_STORAGE_KEY } from "@/constants";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import Textfield from "@/components/forms/input/Textfield";
+import SelectField from "@/components/forms/select/SelectField";
 
 enum Status {
   DEAD = "Dead",
   ALIVE = "Alive",
   UNKNOWN = "Unknown",
 }
+
+const formValuesSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  status: z.nativeEnum(Status, {
+    errorMap: () => ({ message: "Status is required" }),
+  }),
+  species: z.string().min(1, "Species is required"),
+  imageUrl: z.string().url("Invalid image URL"),
+});
+
+type FormValues = z.infer<typeof formValuesSchema>;
+
 export default function CreateCharacterPage() {
-  const [name, setName] = useState("");
-  const [status, setStatus] = useState<Status>(Status.UNKNOWN);
-  const [species, setSpecies] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
   const router = useRouter();
-  const clearForm = () => {
-    setImageUrl("");
-    setName("");
-    setSpecies("");
-    setStatus(Status.UNKNOWN);
-  };
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if ([status, species, imageUrl, name].some((v) => !v)) {
-      return;
-    }
-    const data = JSON.stringify({
-      status,
-      species,
-      imageUrl,
-      name,
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValues>({
+    resolver: zodResolver(formValuesSchema),
+    mode: "all",
+  });
+
+  const onSubmit = (data: FormValues) => {
+    const newMorty = JSON.stringify({
+      status: data.status,
+      species: data.species,
+      imageUrl: data.imageUrl,
+      name: data.name,
     });
 
-    localStorage.setItem(MORTY_STORAGE_KEY, data);
-    clearForm();
+    localStorage.setItem(MORTY_STORAGE_KEY, newMorty);
     router.push("/characters");
   };
 
   return (
     <div className="flex flex-col gap-6 h-screen w-full items-center justify-center">
       <h1>Add new character</h1>
-      <form className="flex flex-col gap-6 w-1/2" onSubmit={onSubmit}>
-        <input
-          value={name}
-          onChange={(e) => setName(e.currentTarget.value)}
+      <form
+        className="flex flex-col gap-6 w-1/2"
+        onSubmit={handleSubmit(onSubmit)}
+      >
+        <Textfield
+          label="Name"
           placeholder="Name"
+          {...register("name")}
+          error={errors.name?.message}
         />
-        <select onSelect={(e) => setStatus(e.currentTarget.value as Status)}>
-          <option value={Status.ALIVE}>{Status.ALIVE}</option>
-          <option value={Status.DEAD}>{Status.DEAD}</option>
-          <option value={Status.UNKNOWN}>{Status.UNKNOWN}</option>
-        </select>
-        <input
-          value={species}
-          onChange={(e) => setSpecies(e.currentTarget.value)}
+        <SelectField
+          label="Status"
+          options={Object.values(Status).map((status) => ({
+            label: status,
+            value: status,
+          }))}
+          {...register("status")}
+        />
+        <Textfield
+          label="Species"
           placeholder="Species"
+          {...register("species")}
+          error={errors.species?.message}
         />
 
-        <input
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.currentTarget.value)}
-          placeholder="Image url"
+        <Textfield
+          label="Image URL"
+          placeholder="Image URL"
+          {...register("imageUrl")}
+          error={errors.imageUrl?.message}
         />
+
         <button
           type="submit"
           className="bg-green-400 px-6 py-2 rounded-lg text-lg font-semibold"
