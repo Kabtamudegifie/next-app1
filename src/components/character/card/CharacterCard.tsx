@@ -10,7 +10,7 @@ interface Props {
 }
 export default function CharacterCard({ character, onDeleteModalShow }: Props) {
   return (
-    <div className="flex group flex-col gap-5 rounded-md shadow-sm border border-gray-100/20 w-full sm:w-1/2 lg:w-1/3 xl:w-1/4">
+    <div className="flex group flex-col gap-5 rounded-md shadow-sm border border-gray-100/20 w-full">
       <div className="relative w-full rounded-md h-64">
         <Image
           src={character.image}

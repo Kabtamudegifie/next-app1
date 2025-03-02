@@ -65,7 +65,7 @@ export default function CreateCharacterPage() {
     <div className="flex flex-col gap-6 h-screen w-full items-center justify-center">
       <h1 className="font-bold text-xl">Add new character</h1>
       <form
-        className="flex flex-col gap-6 w-1/2"
+        className="flex flex-col gap-6 w-full max-w-lg mx-auto p-4 sm:w-3/4 md:w-2/3 lg:w-1/2"
         onSubmit={handleSubmit(onSubmit)}
       >
         <Textfield

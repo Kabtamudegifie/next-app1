@@ -115,7 +115,7 @@ export default function CharactersPage() {
       {globalError && <p className="text-red-400">{globalError}</p>}
       {charactersState.isLoading && <p>Loading...</p>}
       {morties.length > 0 && (
-        <div className="flex flex-row justify-center flex-wrap gap-x-6 gap-y-7">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {morties.map((character, index) => (
             <CharacterCard
               key={index}
